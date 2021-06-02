@@ -18,4 +18,18 @@ io.on("connection", socket => {
         socket.emit('document', documents[docId])
     })
 
+    socket.on('addDoc', doc => {
+        documentss[doc.id] = doc;
+        safeJoin(doc.id);
+        io.emit('document', doc)
+    });
+
+    io.on('connection', socket => {      
+        io.emit('documents', Object.keys(documents));
+        console.log(`Socket ${socket.id} has connected`);
+    });
 })
+
+http.listen(4444, () => {
+    console.log('Listening on port 4444');
+});
