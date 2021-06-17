@@ -1,8 +1,15 @@
 const app = require('express')();
 const http = require('http').Server(app);
-const io = require('socket.io')(http)
-
+const cors = require('cors');
+const io = require('socket.io')(http, {
+    cors: {
+        origin: "http://localhost:4200",
+        methods: ["GET", "POST"]
+    }
+  });
 const documents = {};
+
+app.use(cors());
 
 io.on("connection", socket => {
     let previousId;
@@ -19,12 +26,20 @@ io.on("connection", socket => {
     })
 
     socket.on('addDoc', doc => {
-        documentss[doc.id] = doc;
+        console.log('doc');
+        documents[doc.id] = doc;
         safeJoin(doc.id);
         io.emit('document', doc)
     });
 
+    socket.on('editDoc', doc => {
+        documents[doc.id] = doc;
+        socket.to(doc.id).emit('document', doc);
+    });
+
     io.on('connection', socket => {      
+        console.log('doccy', documents)
+        console.log('documents', Object.keys(documents));
         io.emit('documents', Object.keys(documents));
         console.log(`Socket ${socket.id} has connected`);
     });
